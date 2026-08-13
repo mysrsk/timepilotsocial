@@ -1,0 +1,15 @@
+# Project TODO
+
+- [x] Create a refined public landing page with product positioning and onboarding entry points.
+- [x] Implement authenticated SaaS navigation, profile controls, and user-scoped dashboard shell.
+- [x] Create a subscription-ready, user-isolated data model for social accounts, posts, drafts, schedules, activity, and notifications.
+- [x] Build social account management for X, Instagram, LinkedIn, and Facebook with clear connection states.
+- [x] Build a rich post composer with media handling, platform character guidance, previews, draft saves, and scheduling actions.
+- [x] Implement IANA time-zone scheduling with all global zones, named US zones, UTC persistence, and automatic DST resolution.
+- [x] Build calendar and queue views for editing, rescheduling, deleting, and filtering scheduled content.
+- [x] Add DST-safe, idempotent scheduled publishing workflow hooks and per-post job lifecycle management.
+- [x] Create analytics summaries and an activity feed with user-scoped metrics.
+- [x] Add in-app notification alerts for upcoming, successful, and failed publishing events.
+- [x] Add unit tests for time-zone conversion, user isolation, scheduling inputs, and core backend mutations.
+- [x] Verify desktop and mobile experiences, visual polish, and build health.
+- [ ] Design the native OAuth, encrypted token, refresh, and publish-adapter foundation for X, Meta, LinkedIn, and Facebook connections.
