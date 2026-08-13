@@ -117,6 +117,26 @@ export const socialAccounts = mysqlTable(
   ]
 );
 
+export const nativeOAuthAuthorizations = mysqlTable(
+  "nativeOAuthAuthorizations",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    workspaceId: int("workspaceId").notNull(),
+    userId: int("userId").notNull(),
+    socialAccountId: int("socialAccountId").notNull(),
+    platform: mysqlEnum("platform", ["x", "instagram", "linkedin", "facebook"]).notNull(),
+    state: varchar("state", { length: 191 }).notNull(),
+    encryptedCodeVerifier: text("encryptedCodeVerifier").notNull(),
+    expiresAt: timestamp("expiresAt").notNull(),
+    consumedAt: timestamp("consumedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [
+    uniqueIndex("native_oauth_state_unique").on(table.state),
+    index("native_oauth_user_idx").on(table.userId),
+  ]
+);
+
 export const mediaAssets = mysqlTable(
   "mediaAssets",
   {

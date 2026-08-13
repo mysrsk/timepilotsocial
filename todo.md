@@ -12,4 +12,7 @@
 - [x] Add in-app notification alerts for upcoming, successful, and failed publishing events.
 - [x] Add unit tests for time-zone conversion, user isolation, scheduling inputs, and core backend mutations.
 - [x] Verify desktop and mobile experiences, visual polish, and build health.
-- [ ] Design the native OAuth, encrypted token, refresh, and publish-adapter foundation for X, Meta, LinkedIn, and Facebook connections.
+- [x] Design the native OAuth, encrypted token, refresh, and publish-adapter foundation for X, Meta, LinkedIn, and Facebook connections.
+- [x] Add a native OAuth callback and encrypted token persistence contract for each supported platform.
+- [x] Add token-refresh contracts and expiry handling for native social connections.
+- [x] Split native publishing into explicit platform adapter foundations with configuration validation.

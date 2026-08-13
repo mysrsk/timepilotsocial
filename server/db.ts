@@ -1,8 +1,9 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNull } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
   mediaAssets,
+  nativeOAuthAuthorizations,
   notifications,
   postChannels,
   postMedia,
@@ -152,6 +153,49 @@ export async function attachSocialHandle(input: {
 export async function detachSocialAccount(userId: number, accountId: number) {
   const db = await requireDb();
   await db.delete(socialAccounts).where(and(eq(socialAccounts.id, accountId), eq(socialAccounts.userId, userId)));
+}
+
+export async function getSocialAccountForUser(userId: number, accountId: number) {
+  const db = await requireDb();
+  return (await db.select().from(socialAccounts).where(and(eq(socialAccounts.id, accountId), eq(socialAccounts.userId, userId))).limit(1))[0];
+}
+
+export async function createNativeAuthorization(input: {
+  workspaceId: number;
+  userId: number;
+  socialAccountId: number;
+  platform: SocialPlatform;
+  state: string;
+  encryptedCodeVerifier: string;
+}) {
+  const db = await requireDb();
+  await db.insert(nativeOAuthAuthorizations).values({ ...input, expiresAt: new Date(Date.now() + 10 * 60 * 1000) });
+}
+
+export async function consumeNativeAuthorization(state: string) {
+  const db = await requireDb();
+  const authorization = (await db.select().from(nativeOAuthAuthorizations).where(and(eq(nativeOAuthAuthorizations.state, state), isNull(nativeOAuthAuthorizations.consumedAt), gt(nativeOAuthAuthorizations.expiresAt, new Date()))).limit(1))[0];
+  if (!authorization) return undefined;
+  const result = await db.update(nativeOAuthAuthorizations).set({ consumedAt: new Date() }).where(and(eq(nativeOAuthAuthorizations.id, authorization.id), isNull(nativeOAuthAuthorizations.consumedAt)));
+  const payload = Array.isArray(result) ? result[0] : result;
+  return (payload as { affectedRows?: number } | undefined)?.affectedRows ? authorization : undefined;
+}
+
+export async function completeNativeAuthorization(input: {
+  authorization: { userId: number; socialAccountId: number };
+  encryptedAccessToken: string;
+  encryptedRefreshToken?: string | null;
+  tokenExpiresAt?: Date | null;
+  grantedScopes?: string | null;
+  connectionMetadata?: string | null;
+}) {
+  const db = await requireDb();
+  await db.update(socialAccounts).set({ connectionStatus: "connected", encryptedAccessToken: input.encryptedAccessToken, encryptedRefreshToken: input.encryptedRefreshToken ?? null, tokenExpiresAt: input.tokenExpiresAt ?? null, grantedScopes: input.grantedScopes ?? null, connectionMetadata: input.connectionMetadata ?? null, connectedAt: new Date(), lastError: null }).where(and(eq(socialAccounts.id, input.authorization.socialAccountId), eq(socialAccounts.userId, input.authorization.userId)));
+}
+
+export async function updateNativeTokenSet(input: { userId: number; socialAccountId: number; encryptedAccessToken: string; encryptedRefreshToken?: string | null; tokenExpiresAt?: Date | null }) {
+  const db = await requireDb();
+  await db.update(socialAccounts).set({ encryptedAccessToken: input.encryptedAccessToken, encryptedRefreshToken: input.encryptedRefreshToken ?? null, tokenExpiresAt: input.tokenExpiresAt ?? null, connectionStatus: "connected", lastError: null }).where(and(eq(socialAccounts.id, input.socialAccountId), eq(socialAccounts.userId, input.userId)));
 }
 
 export async function createMediaAsset(input: {

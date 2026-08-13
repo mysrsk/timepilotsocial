@@ -7,6 +7,8 @@ import { resolveLocalDateTime, utcCronForOneTimePost } from "../../shared/timezo
 import * as db from "../db";
 import { createHeartbeatJob, deleteHeartbeatJob, updateHeartbeatJob } from "../_core/heartbeat";
 import { protectedProcedure, router } from "../_core/trpc";
+import { buildNativeAuthorizationUrl, createOAuthState, createPkcePair, nativeOAuthStatus } from "../nativeOauth";
+import { encryptSocialToken } from "../socialTokens";
 
 const platformSchema = z.enum(["x", "instagram", "linkedin", "facebook"]);
 const scheduleInput = z.object({
@@ -60,10 +62,20 @@ export const socialRouter = router({
       }),
     disconnect: protectedProcedure.input(z.object({ accountId: z.number().int().positive() })).mutation(({ ctx, input }) => db.detachSocialAccount(ctx.user.id, input.accountId)),
     nativeConnectionGuide: protectedProcedure.input(z.object({ platform: platformSchema })).query(({ input }) => ({
-      platform: input.platform,
-      status: "requires-owner-configuration" as const,
-      message: "This native connection is ready for your verified OAuth application credentials. Add the platform client ID, client secret, redirect URI, token encryption key, and required platform approval before enabling live authorization.",
+      ...nativeOAuthStatus(input.platform as SocialPlatform),
+      message: "Native authorization uses verified OAuth credentials, PKCE where required, encrypted token storage, and a one-time callback state.",
     })),
+    startNativeAuthorization: protectedProcedure.input(z.object({ accountId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+      const account = await db.getSocialAccountForUser(ctx.user.id, input.accountId);
+      if (!account) throw new TRPCError({ code: "NOT_FOUND", message: "The social account was not found." });
+      const status = nativeOAuthStatus(account.platform);
+      if (!status.configured) throw new TRPCError({ code: "PRECONDITION_FAILED", message: `Native ${account.platform} OAuth must be configured by the workspace owner before connecting this account.` });
+      const workspace = await db.ensureWorkspaceForUser(ctx.user.id, ctx.user.name ?? undefined);
+      const state = createOAuthState();
+      const pkce = createPkcePair();
+      await db.createNativeAuthorization({ workspaceId: workspace.id, userId: ctx.user.id, socialAccountId: account.id, platform: account.platform, state, encryptedCodeVerifier: encryptSocialToken(pkce.verifier) });
+      return { authorizationUrl: buildNativeAuthorizationUrl({ platform: account.platform, state, codeChallenge: pkce.challenge }) };
+    }),
   }),
   content: router({
     uploadMedia: protectedProcedure.input(z.object({

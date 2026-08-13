@@ -54,6 +54,10 @@ export async function scheduledPublishHandler(req: Request, res: Response) {
           handle: account.handle,
           body: scheduledPost.body,
           encryptedAccessToken: account.encryptedAccessToken,
+          encryptedRefreshToken: account.encryptedRefreshToken,
+          tokenExpiresAt: account.tokenExpiresAt,
+          socialAccountId: account.id,
+          userId: scheduledPost.userId,
         });
         await setPostChannelResult(channel.id, result);
         await recordPublishingAttempt({

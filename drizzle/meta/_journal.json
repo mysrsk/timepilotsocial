@@ -22,6 +22,13 @@
       "when": 1786646007861,
       "tag": "0002_daily_red_wolf",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1786646637141,
+      "tag": "0003_majestic_deadpool",
+      "breakpoints": true
     }
   ]
 }
