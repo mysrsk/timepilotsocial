@@ -18,5 +18,6 @@
 - [x] Split native publishing into explicit platform adapter foundations with configuration validation.
 - [x] Evaluate viable .com domain names for the TimePilot Social product identity.
 - [x] Prepare the application launch configuration and GitHub export details.
-- [ ] Create a separate GitHub repository containing the complete codebase after user confirmation.
+- [ ] Push the complete codebase to the user-created GitHub repository `timepilotsocial`.
+- [ ] Re-verify the enabled GitHub connector and the user-created repository before retrying the push.
 - [ ] Guide the user through publishing the validated web app and connecting the selected domain.
