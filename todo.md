@@ -16,3 +16,7 @@
 - [x] Add a native OAuth callback and encrypted token persistence contract for each supported platform.
 - [x] Add token-refresh contracts and expiry handling for native social connections.
 - [x] Split native publishing into explicit platform adapter foundations with configuration validation.
+- [x] Evaluate viable .com domain names for the TimePilot Social product identity.
+- [x] Prepare the application launch configuration and GitHub export details.
+- [ ] Create a separate GitHub repository containing the complete codebase after user confirmation.
+- [ ] Guide the user through publishing the validated web app and connecting the selected domain.
